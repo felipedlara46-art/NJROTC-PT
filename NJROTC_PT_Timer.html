@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NJROTC Daily PT Timer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh;padding:16px;}
+.container{max-width:720px;margin:0 auto;}
+.header{background:#0D2240;color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;}
+.header-logo{width:48px;height:48px;background:#B8943F;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0D2240;flex-shrink:0;text-align:center;line-height:1.2;}
+.header-title{font-size:20px;font-weight:700;letter-spacing:.02em;}
+.header-sub{font-size:12px;color:#B8943F;margin-top:2px;}
+.day-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.db{padding:7px 16px;border-radius:8px;border:1.5px solid #c5ccd6;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:#555;transition:all .15s;}
+.db:hover{background:#e8edf3;}
+.db.on{background:#0D2240;border-color:#0D2240;color:#fff;}
+.ftag{display:inline-block;font-size:12px;padding:3px 12px;border-radius:8px;margin-bottom:8px;font-weight:600;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#777;margin:10px 0 6px;}
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;margin-bottom:6px;}
+.ecard{background:#fff;border:1.5px solid #e0e4ea;border-radius:12px;overflow:hidden;transition:border-color .15s;}
+.ecard.cur{border:2.5px solid #185FA5;box-shadow:0 0 0 3px rgba(24,95,165,.12);}
+.ecard.rest-card{border-style:dashed;border-color:#EF9F27;}
+.ecard.done-card{opacity:.45;}
+.eimg{width:100%;height:105px;object-fit:cover;display:block;background:#eef0f3;}
+.eimg-ph{width:100%;height:105px;display:flex;align-items:center;justify-content:center;background:#eef0f3;flex-direction:column;gap:4px;}
+.eimg-ph span{font-size:10px;color:#999;}
+.ebody{padding:8px 10px;}
+.ename{font-size:12px;font-weight:700;color:#222;}
+.ecue{font-size:11px;color:#666;line-height:1.35;margin-top:2px;}
+.edur{font-size:11px;color:#185FA5;font-weight:700;margin-top:4px;}
+.alink{font-size:10px;color:#185FA5;text-decoration:none;margin-left:4px;}
+.alink:hover{text-decoration:underline;}
+.rest-body{padding:12px;text-align:center;}
+.rest-label{font-size:13px;font-weight:700;color:#854F0B;}
+.rest-sub{font-size:11px;color:#BA7517;margin-top:3px;}
+.tbox{background:#fff;border-radius:14px;border:1.5px solid #e0e4ea;padding:20px;text-align:center;margin-top:12px;}
+.tlabel{font-size:11px;color:#999;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;}
+.texname{font-size:20px;font-weight:700;color:#1a1a1a;min-height:28px;margin-bottom:2px;}
+.tcue{font-size:13px;color:#666;min-height:18px;margin-bottom:12px;}
+.tnum{font-size:64px;font-weight:700;color:#0D2240;letter-spacing:.04em;line-height:1;}
+.tnum.rest-mode{color:#854F0B;}
+.pbar{height:6px;background:#e8edf3;border-radius:3px;margin:12px 0 14px;}
+.pfill{height:100%;background:#185FA5;border-radius:3px;transition:width 1s linear;}
+.pfill.rest-fill{background:#EF9F27;}
+.ttime{font-size:11px;color:#999;text-align:right;margin-bottom:6px;}
+.ctrls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.ctrls button{padding:10px 24px;border-radius:8px;border:1.5px solid #c5ccd6;background:#fff;cursor:pointer;font-size:14px;font-weight:600;color:#333;transition:all .15s;}
+.ctrls button:hover{background:#f0f2f5;}
+.bgo{background:#0D2240!important;border-color:#0D2240!important;color:#fff!important;}
+.bgo:hover{background:#1a3a6b!important;}
+.footer{text-align:center;font-size:11px;color:#aaa;margin-top:14px;padding-bottom:8px;}
+.footer a{color:#185FA5;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="header-logo">NJ<br>ROTC</div>
+  <div>
+    <div class="header-title">Daily PT Timer</div>
+    <div class="header-sub">5-Minute Physical Training Program</div>
+  </div>
+</div>
+
+<div class="day-tabs" id="dtabs"></div>
+<div id="ftag" class="ftag"></div>
+
+<div class="section-label">Warm-up (always first)</div>
+<div class="egrid" id="wuGrid"></div>
+
+<div class="section-label">Main workout</div>
+<div class="egrid" id="mainGrid"></div>
+
+<div class="ttime" id="ttime"></div>
+
+<div class="tbox">
+  <div class="tlabel" id="tlabel">Ready</div>
+  <div class="texname" id="texname">Select a day and press Start</div>
+  <div class="tcue" id="tcue"></div>
+  <div class="tnum" id="tnum">--:--</div>
+  <div class="pbar"><div class="pfill" id="pfill" style="width:100%"></div></div>
+  <div class="ctrls">
+    <button class="bgo" id="startBtn" onclick="startPT()">Start PT</button>
+    <button onclick="resetPT()">Reset</button>
+  </div>
+</div>
+
+<div class="footer">Exercise guides: <a href="https://www.acefitness.org/resources/everyone/exercise-library/" target="_blank">ACE Fitness Library</a> &nbsp;|&nbsp; NJROTC Unit PT Program</div>
+
+</div>
+<script>
+const WARMUP=[
+  {name:"Arm circles",cue:"Forward 10, backward 10 — full range of motion",dur:20,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/High_Knees_-_Illustration.jpg/320px-High_Knees_-_Illustration.jpg",ref:"https://www.acefitness.org/"},
+  {name:"Neck rolls",cue:"Slow ear-to-shoulder each side, no full back roll",dur:15,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/High_Knees_-_Illustration.jpg/320px-High_Knees_-_Illustration.jpg",ref:"https://www.acefitness.org/"},
+  {name:"Hip circles",cue:"Hands on hips, large slow circles each direction",dur:15,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/High_Knees_-_Illustration.jpg/320px-High_Knees_-_Illustration.jpg",ref:"https://www.acefitness.org/"},
+  {name:"Leg swings",cue:"Hold wall, swing each leg forward/back x10",dur:20,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Dumbbell_Lunge.jpg/240px-Dumbbell_Lunge.jpg",ref:"https://www.acefitness.org/"},
+  {name:"March in place",cue:"Controlled pace to get blood moving",dur:20,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/High_Knees_-_Illustration.jpg/320px-High_Knees_-_Illustration.jpg",ref:"https://www.acefitness.org/"}
+];
+const REST={name:"Rest",cue:"Shake it out — recover",dur:15,isRest:true};
+const DAYS=[
+{label:"Mon",focus:"Running & Legs",fc:"background:#E1F5EE;color:#085041",exercises:[
+  {name:"High knees",cue:"Drive knees to hip height, pump arms",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/High_Knees_-_Illustration.jpg/320px-High_Knees_-_Illustration.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/209/high-knee-march/"},
+  {name:"Bodyweight squats",cue:"Feet shoulder-width, sit back, chest up",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Squat_side_view.gif/240px-Squat_side_view.gif",ref:"https://www.acefitness.org/resources/everyone/exercise-library/137/squat/"},
+  {name:"Alternating lunges",cue:"Step forward, front knee above ankle",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Dumbbell_Lunge.jpg/240px-Dumbbell_Lunge.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/51/lunge/"},
+  {name:"Calf raises",cue:"Rise slow, hold 1s at top, lower controlled",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Standing_calf_raise.jpg/240px-Standing_calf_raise.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/36/standing-calf-raise/"},
+  {name:"Wall sit",cue:"90 degree bend, back flat, hold the burn",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Wall_sit.jpg/240px-Wall_sit.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/206/wall-sit/"}
+]},
+{label:"Tue",focus:"Push-ups",fc:"background:#E6F1FB;color:#0C447C",exercises:[
+  {name:"Standard push-up",cue:"Body plank, chest to 2 inches from deck",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Pushup_-_Illustration.jpg/320px-Pushup_-_Illustration.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/16/push-up/"},
+  {name:"Wide-grip push-up",cue:"Hands wider than shoulders, elbows flare out",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Wide_push_up.jpg/240px-Wide_push_up.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/262/wide-grip-push-up/"},
+  {name:"Diamond push-up",cue:"Thumbs and forefingers form a diamond",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Diamond_push_up.jpg/240px-Diamond_push_up.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/261/diamond-push-up/"},
+  {name:"Isometric hold",cue:"Lower halfway, hold 2 inches above deck",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Pushup_-_Illustration.jpg/320px-Pushup_-_Illustration.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/16/push-up/"},
+  {name:"Slow-tempo push-up",cue:"3-count down, pause at bottom, 1-count up",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Pushup_-_Illustration.jpg/320px-Pushup_-_Illustration.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/16/push-up/"}
+]},
+{label:"Wed",focus:"Planks & Core",fc:"background:#FAEEDA;color:#633806",exercises:[
+  {name:"Front plank",cue:"Elbows under shoulders, rigid body line",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Plank_exercise.jpg/320px-Plank_exercise.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/134/forearm-plank/"},
+  {name:"Right side plank",cue:"Stack feet, hips elevated, body straight",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Side_plank.jpg/240px-Side_plank.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/165/side-plank/"},
+  {name:"Left side plank",cue:"Stack feet, hips elevated, body straight",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Side_plank.jpg/240px-Side_plank.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/165/side-plank/"},
+  {name:"Plank shoulder taps",cue:"Tap each shoulder alternating, minimize hip sway",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Plank_exercise.jpg/320px-Plank_exercise.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/134/forearm-plank/"},
+  {name:"Plank up-downs",cue:"Elbow to hand one arm at a time, stay level",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Plank_exercise.jpg/320px-Plank_exercise.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/134/forearm-plank/"}
+]},
+{label:"Thu",focus:"Full Circuit",fc:"background:#FAECE7;color:#712B13",exercises:[
+  {name:"Push-ups",cue:"Max reps with proper form in time",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Pushup_-_Illustration.jpg/320px-Pushup_-_Illustration.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/16/push-up/"},
+  {name:"Front plank",cue:"Hold strong throughout, no sagging hips",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Plank_exercise.jpg/320px-Plank_exercise.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/134/forearm-plank/"},
+  {name:"Jump squats",cue:"Land soft, absorb with knees, immediate reset",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Squat_side_view.gif/240px-Squat_side_view.gif",ref:"https://www.acefitness.org/resources/everyone/exercise-library/137/squat/"},
+  {name:"Wide-grip push-ups",cue:"Controlled tempo, full range of motion",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Wide_push_up.jpg/240px-Wide_push_up.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/262/wide-grip-push-up/"},
+  {name:"Plank hold",cue:"Final push — rigid body, breathe steady",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Plank_exercise.jpg/320px-Plank_exercise.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/134/forearm-plank/"}
+]},
+{label:"Fri",focus:"Endurance Burn",fc:"background:#EAF3DE;color:#27500A",exercises:[
+  {name:"Jumping jacks",cue:"Arms fully extended overhead, full rep",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Jumping-Jacks-2.jpg/240px-Jumping-Jacks-2.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/45/jumping-jack/"},
+  {name:"Burpees",cue:"Full extension at top, chest to deck at bottom",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Burpee_exercise_illustration.svg/320px-Burpee_exercise_illustration.svg.png",ref:"https://www.acefitness.org/resources/everyone/exercise-library/195/burpee/"},
+  {name:"Mountain climbers",cue:"Fast feet, core tight, hips level",dur:50,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Mountain_Climber_-_Illustration.jpg/320px-Mountain_Climber_-_Illustration.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/84/mountain-climber/"},
+  {name:"Reverse lunges",cue:"Step back, front shin vertical",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Dumbbell_Lunge.jpg/240px-Dumbbell_Lunge.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/51/lunge/"},
+  {name:"High knees sprint",cue:"Max effort — push through the burn",dur:40,img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/High_Knees_-_Illustration.jpg/320px-High_Knees_-_Illustration.jpg",ref:"https://www.acefitness.org/resources/everyone/exercise-library/209/high-knee-march/"}
+]}
+];
+
+let curDay=new Date().getDay();
+if(curDay===0||curDay===6)curDay=1; else curDay=curDay-1;
+let seq=[],seqIdx=0,seqElapsed=0,totalElapsed=0,totalSec=0,ivl=null,running=false;
+
+function fmt(s){return Math.floor(s/60)+':'+(String(s%60)).padStart(2,'0');}
+
+function buildSeq(d){
+  const s=[];
+  WARMUP.forEach(w=>s.push({...w,phase:'warmup',cardId:'wu'+WARMUP.indexOf(w)}));
+  DAYS[d].exercises.forEach((ex,i)=>{
+    s.push({...ex,phase:'main',cardId:'m'+i});
+    if(i<DAYS[d].exercises.length-1)s.push({...REST,phase:'rest',cardId:'r'+i});
+  });
+  return s;
+}
+
+function buildTabs(){
+  const t=document.getElementById('dtabs');t.innerHTML='';
+  DAYS.forEach((d,i)=>{
+    const b=document.createElement('button');
+    b.className='db'+(i===curDay?' on':'');
+    b.textContent=d.label;
+    b.onclick=()=>{curDay=i;resetPT();buildTabs();buildDay();};
+    t.appendChild(b);
+  });
+}
+
+function makeCard(ex,pfx,idx){
+  const c=document.createElement('div');
+  c.className='ecard'+(ex.isRest?' rest-card':'');
+  c.id=pfx+idx;
+  if(ex.isRest){
+    c.innerHTML=`<div class="rest-body"><div class="rest-label">15s Rest</div><div class="rest-sub">Recover — shake it out</div></div>`;
+  } else {
+    const d=ex.dur>=60?Math.floor(ex.dur/60)+'m'+(ex.dur%60?' '+ex.dur%60+'s':''):ex.dur+'s';
+    c.innerHTML=`<img class="eimg" src="${ex.img}" alt="${ex.name}" onerror="this.style.display='none';this.nextSibling.style.display='flex';">
+    <div class="eimg-ph" style="display:none"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.5"><circle cx="12" cy="8" r="3"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg><span>See ACE link</span></div>
+    <div class="ebody"><div class="ename">${ex.name}</div><div class="ecue">${ex.cue}</div>
+    <div class="edur">${d}<a class="alink" href="${ex.ref}" target="_blank">ACE guide</a></div></div>`;
+  }
+  return c;
+}
+
+function buildDay(){
+  const day=DAYS[curDay];
+  const ft=document.getElementById('ftag');
+  ft.style.cssText=day.fc+';font-size:12px;padding:3px 12px;border-radius:8px;margin-bottom:8px;font-weight:600;display:inline-block;';
+  ft.textContent='Focus: '+day.focus;
+  const wg=document.getElementById('wuGrid');wg.innerHTML='';
+  WARMUP.forEach((w,i)=>wg.appendChild(makeCard(w,'wu',i)));
+  const mg=document.getElementById('mainGrid');mg.innerHTML='';
+  day.exercises.forEach((ex,i)=>{
+    mg.appendChild(makeCard(ex,'m',i));
+    if(i<day.exercises.length-1)mg.appendChild(makeCard(REST,'r',i));
+  });
+  seq=buildSeq(curDay);
+  totalSec=seq.reduce((s,e)=>s+e.dur,0);
+  const wuSec=WARMUP.reduce((s,e)=>s+e.dur,0);
+  document.getElementById('ttime').textContent='Warm-up: '+fmt(wuSec)+'  |  Main: '+fmt(totalSec-wuSec)+'  |  Total: '+fmt(totalSec);
+  document.getElementById('tnum').textContent=fmt(totalSec);
+  document.getElementById('texname').textContent='Press Start to begin';
+  document.getElementById('tcue').textContent='';
+  document.getElementById('tlabel').textContent='Ready';
+  document.getElementById('pfill').style.width='100%';
+  document.getElementById('pfill').className='pfill';
+  document.getElementById('tnum').className='tnum';
+}
+
+function highlightSeq(i){
+  seq.forEach((s,j)=>{
+    const c=document.getElementById(s.cardId);if(!c)return;
+    c.className='ecard'+(s.isRest?' rest-card':'')+(j===i?' cur':j<i?' done-card':'');
+  });
+}
+
+function startPT(){
+  if(running)return;running=true;seqIdx=0;seqElapsed=0;totalElapsed=0;
+  const sb=document.getElementById('startBtn');sb.textContent='Running...';sb.disabled=true;
+  ivl=setInterval(tick,1000);
+}
+
+function tick(){
+  seqElapsed++;totalElapsed++;
+  if(seqIdx>=seq.length){finishPT();return;}
+  const cur=seq[seqIdx];
+  const exRem=cur.dur-seqElapsed;
+  const totalRem=totalSec-totalElapsed;
+  if(totalRem<0){finishPT();return;}
+  const isRest=cur.isRest;
+  document.getElementById('tnum').textContent=fmt(Math.max(0,exRem));
+  document.getElementById('tnum').className='tnum'+(isRest?' rest-mode':'');
+  document.getElementById('pfill').className='pfill'+(isRest?' rest-fill':'');
+  document.getElementById('pfill').style.width=Math.round((Math.max(0,totalRem)/totalSec)*100)+'%';
+  const phase=cur.phase==='warmup'?'Warm-up':'Main workout';
+  document.getElementById('tlabel').textContent=isRest?'Rest':phase+' — '+(seqIdx+1)+' of '+seq.length;
+  document.getElementById('texname').textContent=isRest?'Rest':cur.name;
+  document.getElementById('tcue').textContent=isRest?'Recover — next: '+(seqIdx+1<seq.length?seq[seqIdx+1].name:'done'):cur.cue;
+  highlightSeq(seqIdx);
+  if(seqElapsed>=cur.dur){seqIdx++;seqElapsed=0;}
+}
+
+function resetPT(){
+  clearInterval(ivl);ivl=null;running=false;seqIdx=0;seqElapsed=0;totalElapsed=0;
+  seq=buildSeq(curDay);totalSec=seq.reduce((s,e)=>s+e.dur,0);
+  document.getElementById('tnum').textContent=fmt(totalSec);
+  document.getElementById('tnum').className='tnum';
+  document.getElementById('tlabel').textContent='Ready';
+  document.getElementById('texname').textContent='Press Start to begin';
+  document.getElementById('tcue').textContent='';
+  document.getElementById('pfill').style.width='100%';
+  document.getElementById('pfill').className='pfill';
+  const sb=document.getElementById('startBtn');sb.textContent='Start PT';sb.disabled=false;
+  seq.forEach(s=>{const c=document.getElementById(s.cardId);if(c)c.className='ecard'+(s.isRest?' rest-card':'');});
+}
+
+function finishPT(){
+  clearInterval(ivl);ivl=null;running=false;
+  document.getElementById('tnum').textContent='0:00';
+  document.getElementById('tnum').className='tnum';
+  document.getElementById('tlabel').textContent='Complete!';
+  document.getElementById('texname').textContent='PT done — recover and fall in!';
+  document.getElementById('tcue').textContent='';
+  document.getElementById('pfill').style.width='0%';
+  const sb=document.getElementById('startBtn');sb.textContent='Start PT';sb.disabled=false;
+  seq.forEach(s=>{const c=document.getElementById(s.cardId);if(c)c.classList.add('done-card');});
+}
+
+buildTabs();buildDay();
+</script>
+</body>
+</html>
